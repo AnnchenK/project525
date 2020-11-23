@@ -6,13 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SuperWebCam</title>
 </head>
-<body>
-    <video width=400 height=400 id="video" controls></video>
-  <p>
-  <button onclick="startWebcam();">Start WebCam</button>
-  <button onclick="stopWebcam();">Stop WebCam</button>
-  </p>
-    
+<body onload="init();">
+  
+  <div class="result">
+    <div class="vid">
+       <p style="text-align:center;font-size:22px;color:#ffffff;text-shadow: 1px 1px 2px black;"> Веб-камера</p>
+             <video onclick="snapshot(this);" width=600 height=450 id="video" controls autoplay></video>
+    </div>
+    <div class="scrn">
+      <p style="text-align:center;font-size:22px;color:#ffffff;text-shadow: 1px 1px 2px black;">Снимок: <p>
+           <canvas  id="myCanvas" width="600" height="450"></canvas>
+    </div>
+ </div>
+
+ <div class="bttn">
+     <button class="b1" onclick="startWebcam();">Запуск Камеры</button>
+     <button class="b2" onclick="stopWebcam();">Стоп Камера</button> 
+     <button class="b3" onclick="snapshot();">Сделать Снимок</button>
+ </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script src="script1.js"></script>
 </body>
 </html>
