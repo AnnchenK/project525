@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="styles/style.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <div class="vid">
+        <p class="p"> Веб-камера</p>
+              <video onclick="snapshot(this);" id="video" controls autoplay></video>
+    </div>
+
+    <div class="bttn" id="bttn">
+        <button class="b1" onclick="startWebcam();">Запуск Камеры</button>
+        <button class="b2" onclick="stopWebcam();">Стоп Камера</button> 
+        <button class="b3" onclick="snapshot();">Сделать Снимок</button>
+        <button id="start" onclick="">Начать запись звука</button>
+        <button id="stop" onclick="">Остановить запись звука</button>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="scripts/script.js"></script>
+</body>
+</html>
