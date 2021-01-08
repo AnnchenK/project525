@@ -19,14 +19,6 @@ let webcamStream;
           webcamStream.getTracks()[0].stop(); 
     } 
 
-  var canvas, canvas1, ctx;
- 
-function init() {
-  canvas = document.getElementById("myCanvas");
-  canvas1 = document.getElementById("myCanvas1");
-  ctx = canvas.getContext('2d');
-}
-
 async function loadAndPredict(img) {
   const net = await bodyPix.load({
     architecture: 'MobileNetV1',
@@ -42,13 +34,26 @@ async function loadAndPredict(img) {
     const flipHorizontal = false;
     const maskBlurAmount = 0;
     
+    let canvas1 = document.createElement('canvas');
+canvas1.id = 'myCanvas1';
+document.body.appendChild(canvas1);
+mycanvas1 = document.getElementById('myCanvas1');
+
     bodyPix.drawMask(
-      canvas1, img, coloredPartImage, opacity, maskBlurAmount,
+      mycanvas1, img, coloredPartImage, opacity, maskBlurAmount,
       flipHorizontal);
   }
+
+  let canvas = document.createElement('canvas');
+  canvas.id = 'myCanvas';
+  document.body.appendChild(canvas);
  
 function snapshot() {
-  ctx.drawImage(video, 0,0, canvas.width, canvas.height);
+  var mycanvas = document.getElementById('myCanvas');
+    mycanvas.width = video.videoWidth;
+    mycanvas.height = video.videoHeight;
+    var ctx = mycanvas.getContext('2d');
+  ctx.drawImage(video, 0, 0);
   const img = document.getElementById('myCanvas');
   loadAndPredict(img);
 }

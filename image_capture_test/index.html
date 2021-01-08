@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SuperWebCam</title>
 </head>
-<body onload="init();">
+<body>
   
     <div class="vid">
        <p class="p"> Веб-камера</p>
@@ -18,17 +18,6 @@
      <button class="b2" onclick="stopWebcam();">Стоп Камера</button> 
      <button class="b3" onclick="snapshot();">Сделать Снимок</button>
  </div>
-
-<div class="result">
- <div class="scrn" style="width: 600px;">
-  <p class="p">Снимок: <p>
-  <canvas  id="myCanvas" height="450px" width="600px"></canvas></p></p>
-  </div>
- <div class="scrn" style="width: 600px;">
-  <p class="p">Результат bodypix: <p>
-  <canvas  id="myCanvas1" height="450px" width="600px"></canvas></p></p>
-</div>
-</div>
 
  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.2"></script>
  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.0"></script>
