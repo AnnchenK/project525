@@ -1,5 +1,12 @@
+URL = window.URL || window.webkitURL;
+
 let video;
 let webcamStream;
+
+var gumStream;
+var rec;
+var input;
+var AudioContext;
  
 function startWebcam() {
  
@@ -11,36 +18,10 @@ function startWebcam() {
     video = document.querySelector('#video');
     video.srcObject = stream;
     video.play();
-
-    const mediaRecorder = new MediaRecorder(stream);
-
-    document.querySelector('#start').addEventListener('click', function(){
-        mediaRecorder.start();
-    });
-    let audioChunks = [];
-    mediaRecorder.addEventListener("dataavailable", function(event) {
-        audioChunks.push(event.data);
-    });
-
-    document.querySelector('#stop').addEventListener('click', function(){
-        mediaRecorder.stop();
-    });
-
-    mediaRecorder.addEventListener("stop", function() {
-        const audioBlob = new Blob(audioChunks, {
-            type: 'audio/wav'
-        });
-
-        let audio = document.createElement('audio');
-        console.log(audioBlob.type);
-        audio.src = audioBlob.stream();
-        audio.controls = true;
-        audio.autoplay = true;
-        document.body.appendChild(audio);
-        audioChunks = [];
-    });
  
     webcamStream = stream;
+    gumStream = stream;
+
     }).catch((error) => {
     console.log('navigator.getUserMedia error: ', error);
     });
@@ -49,6 +30,8 @@ function startWebcam() {
 function stopWebcam() {
       webcamStream.getTracks()[0].stop();
       webcamStream.getTracks()[1].stop(); 
+      gumStream.getTracks()[0].stop();
+      gumStream.getTracks()[1].stop();
 } 
 
 let canvas = document.createElement('canvas');
@@ -62,4 +45,36 @@ function snapshot() {
     mycanvas.height = video.videoHeight;
     var ctx = mycanvas.getContext('2d');
     ctx.drawImage(video, 0, 0);
+}
+
+function startRecording() {
+    
+    AudioContext = window.AudioContext || window.webkitAudioContext;
+    
+    var audioContext = new AudioContext;
+    input = audioContext.createMediaStreamSource(gumStream);
+    rec = new Recorder(input, {
+        numChannels: 2
+    })
+    rec.record()
+}
+
+function stopRecording() { 
+    rec.stop();
+    rec.exportWAV(createDownloadLink);
+}
+
+function createDownloadLink(blob) {
+    var url = URL.createObjectURL(blob);
+    var au = document.createElement('audio');
+    var li = document.createElement('li');
+    var link = document.createElement('a');
+    au.controls = true;
+    au.src = url;
+    link.href = url;
+    link.download = new Date().toISOString() + '.wav';
+    link.innerHTML = link.download;
+    li.appendChild(au);
+    li.appendChild(link); 
+    recordingsList.appendChild(li);
 }
