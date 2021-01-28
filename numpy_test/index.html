@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Try NumPy</title>
+    <script type="text/javascript">
+        window.languagePluginUrl = 'https://cdn.jsdelivr.net/pyodide/v0.16.1/full/';
+    </script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.16.1/full/pyodide.js"></script>
+</head>
+<body>
+    
+
+    <script type="text/javascript">
+        languagePluginLoader.then(function ()  {
+            let bttn = document.createElement('button');
+            bttn.innerHTML = 'Click Me';
+            bttn.setAttribute('onclick', 'evaluatePython()');
+            document.body.appendChild(bttn);
+        })
+
+        const m1 = document.createElement('div');
+        m1.innerHTML = 'Generated Array';
+        const m2 = document.createElement('div');
+        m2.innerHTML = 'Mean of Array'
+        const array = document.createElement('textarea')
+        array.setAttribute('id', 'ar')
+        const mean = document.createElement('textarea')
+        mean.setAttribute('id', 'm')
+        
+        function Write(elem, s){
+            elem.value = s;
+        }
+
+        function evaluatePython(){
+            
+            document.body.appendChild(m1);
+            document.body.appendChild(array);
+            document.body.appendChild(m2);
+            document.body.appendChild(mean);
+            pyodide.loadPackage('numpy').then(() => {
+                pyodide.runPythonAsync(`
+                    import numpy as np
+                    import js
+                    from js import document
+                    ar = np.random.rand(3)
+                    document.getElementById('ar').innerHTML = ar
+                    m = np.mean(ar)
+                    document.getElementById('m').innerHTML = m
+                    print(np.mean(ar))
+                `);
+            });
+            console.log('xnnx');
+        }
+  </script>
+</body>
+</html>
