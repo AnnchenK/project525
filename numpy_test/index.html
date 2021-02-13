@@ -13,13 +13,22 @@
     
 
     <script type="text/javascript">
-        languagePluginLoader.then(function ()  {
+        languagePluginLoader.then(function()  {
             let bttn = document.createElement('button');
+            bttn.setAttribute('id', 'bttn');
             bttn.innerHTML = 'Click Me';
-            bttn.setAttribute('onclick', 'evaluatePython()');
+            bttn.setAttribute('onclick', 'showForm()');
             document.body.appendChild(bttn);
         })
 
+        const m = document.createElement('div');
+        m.innerHTML = 'Count of elements';
+        const inp = document.createElement('input');
+        inp.setAttribute('type', 'number');
+        inp.setAttribute('id', 'count');
+        const subm = document.createElement('input');
+        subm.setAttribute('type', 'submit');
+        subm.setAttribute('onclick', 'evaluatePython()');
         const m1 = document.createElement('div');
         m1.innerHTML = 'Generated Array';
         const m2 = document.createElement('div');
@@ -28,30 +37,34 @@
         array.setAttribute('id', 'ar')
         const mean = document.createElement('textarea')
         mean.setAttribute('id', 'm')
-        
-        function Write(elem, s){
-            elem.value = s;
+
+        function showForm(){
+            let bttn = document.getElementById('bttn');
+            document.body.removeChild(bttn);
+            document.body.appendChild(m);
+            document.body.appendChild(inp);
+            document.body.appendChild(subm);
         }
 
         function evaluatePython(){
-            
             document.body.appendChild(m1);
             document.body.appendChild(array);
             document.body.appendChild(m2);
             document.body.appendChild(mean);
+            
             pyodide.loadPackage('numpy').then(() => {
                 pyodide.runPythonAsync(`
                     import numpy as np
                     import js
                     from js import document
-                    ar = np.random.rand(3)
+                    
+                    count = document.getElementById('count').value
+                    ar = np.random.rand(int(count))
                     document.getElementById('ar').innerHTML = ar
                     m = np.mean(ar)
                     document.getElementById('m').innerHTML = m
-                    print(np.mean(ar))
                 `);
             });
-            console.log('xnnx');
         }
   </script>
 </body>
