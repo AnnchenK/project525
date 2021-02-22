@@ -46,6 +46,46 @@ function brightness(img1) {
     return parseInt(avg / 23);
 }
 
+function blured_1(imgl) {
+    // Решейп изображения к (1, ширина, высота, 1) 
+    
+    let _grayscaleFrame = imgl.mean(2).toFloat().expandDims(0).expandDims(-1); 
+
+    // окно для свертки с исходным изображением
+    let laplaceFilter = tf.tensor2d([
+              [0, 1, 0],
+              [1, -4, 1],
+              [0, 1, 0]
+    ]).expandDims(-1).expandDims(-1); // [filter_height, filter_width, in_channels, out_channels]
+
+    // приведение к серому и вычисление свертки
+    let _laplacian = _grayscaleFrame.conv2d(laplaceFilter, 1, 'valid').squeeze();
+    console.log( _laplacian.sum().dataSync(0))
+    return _tensor_sum = _laplacian.sum().dataSync(0)[0]
+    // нужно обосновать выбор константы
+    if  (_tensor_sum < 60.0)
+        return parseInt(0);
+    return parseInt(1);
+}
+
+function blured_2(imgl) {
+    let src = cv.imread(imgl);
+    let dst = new cv.Mat();
+    let men = new cv.Mat();
+    let menO = new cv.Mat();
+    // приведение к серому
+    cv.cvtColor(src, src, cv.COLOR_RGB2GRAY, 0);
+    // лаплассиан 
+    var t = cv.Laplacian(src, dst, cv.CV_64F, 1, 1, 0, cv.BORDER_DEFAULT);
+    console.log(t,cv.meanStdDev(dst, menO, men),menO.data64F[0], men.data64F[0]);
+    return menO.data64F[0]
+    if(menO.data64F[0] < 10)
+        return parseInt(0);
+    return parseInt(1);
+
+}
+
+
 async function loadAndPredict(img) {
     const net = await bodyPix.load({
       architecture: 'MobileNetV1',
@@ -55,7 +95,5 @@ async function loadAndPredict(img) {
     });
       const segmentation = await net.segmentPerson(img);
     
-      let t = await segmentation.allPoses.length;
-
-      return t
+      return segmentation.allPoses.length;
 }

@@ -14,7 +14,12 @@
     <script src="scripts/script.js"></script>
 </head>
 <body onload="startCam()">
-    <div id='camera'></div>
+    <div id='camera' style="position: relative">
+        <div id='snaps' style="position: absolute; top: 0; right: 0; width: 320px;">
+            <img id="img1" style="width:320px; height: 240px; display: none">
+            <img id="img2" style="width:320px; height: 240px; display: none">
+        </div>
+    </div>
     <div id='buttns'></div>
     <div id='table'></div>
 </body>
