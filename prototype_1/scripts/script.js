@@ -1,6 +1,7 @@
 let video;
 let webcamStream;
 let timer
+let flag = 1
 
 function startCam() {
  
@@ -91,23 +92,66 @@ function snapshot(i) {
     var ctx = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0);
     document.body.removeChild(canvas);
-    if (i == 0)
+    if (flag)
     {
-        let im = document.getElementById('img1')
-        im.style.display = 'inline'
-        im.src = canvas.toDataURL()
+        if (i == 0)
+        {
+            let im = document.getElementById('img3')
+            im.style.display = 'inline'
+            im.src = canvas.toDataURL()
+            let c = document.getElementById('c3')
+            c.style.display = 'inline'
+            c.innerText = 'img1'
+        }
+        else
+        {
+            let im = document.getElementById('img4')
+            im.style.display = 'inline'
+            im.src = canvas.toDataURL()
+            flag = 0
+            let c = document.getElementById('c4')
+            c.style.display = 'inline'
+            c.innerText = 'img2'
+        }
     }
-    else
+    else if (!flag)
     {
-        let im = document.getElementById('img2')
-        im.style.display = 'inline'
-        im.src = canvas.toDataURL()
+        if (i == 0)
+        {
+            let old = document.getElementById('img1')
+            let im = document.getElementById('img3')
+            old.style.display = 'inline'
+            old.src = im.src
+            let c1 = document.getElementById('c1')
+            c1.style.display = 'inline'
+            c1.innerText = 'img1'
+            im.style.display = 'inline'
+            im.src = canvas.toDataURL()
+            let c2 = document.getElementById('c3')
+            c2.style.display = 'inline'
+            c2.innerText = 'img3'
+        }
+        else
+        {
+            let old = document.getElementById('img2')
+            let im = document.getElementById('img4')
+            old.style.display = 'inline'
+            old.src = im.src
+            let c1 = document.getElementById('c2')
+            c1.style.display = 'inline'
+            c1.innerText = 'img2'
+            im.style.display = 'inline'
+            im.src = canvas.toDataURL()
+            let c2 = document.getElementById('c4')
+            c2.style.display = 'inline'
+            c2.innerText = 'img4'
+        }
     }
     return canvas;
 }
 
 function createTable() {
-    let tableHeaders = ['mse', 'rmse', 'snr', 'psnr', 'ssim', 'brithness', 'count of faces', 'blur_tf', 'blur_cv']
+    let tableHeaders = ['for', 'mse', 'rmse', 'snr', 'psnr', 'ssim', 'for', 'brithness', 'count of faces', 'blur_tf', 'blur_cv']
     let table = document.createElement('table')
     table.setAttribute('id', 'tbl')
     let tableHead = document.createElement('thead')
@@ -150,10 +194,31 @@ function appendRow(data) {
     bl2.innerText = data.is_blur_2
 
     let table = document.getElementById('tbl')
-    
+
+    let for1 = document.createElement('td'), for2 = document.createElement('td')
+
+    if (table.rows.length == 1)
+    {
+        for1.innerText = 'img1-2'
+        for2.innerText = 'img2'
+    }
+    else
+        if (table.rows.length == 2)
+        {
+            for1.innerText = 'img3-4'
+            for2.innerText = 'img4'
+        }
+        else
+        {
+            table.rows[2].cells[0].innerText = 'img1-2'
+            table.rows[2].cells[6].innerText = 'img2'
+            for1.innerText = 'img3-4'
+            for2.innerText = 'img4'
+        }
+
     if (table.rows.length == 3)
         table.deleteRow(1)
 
-    newRow.append(mse, rmse, snr, psnr, ssim, br, count, bl1, bl2)
+    newRow.append(for1, mse, rmse, snr, psnr, ssim, for2, br, count, bl1, bl2)
     table.append(newRow)
 }
