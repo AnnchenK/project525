@@ -1,0 +1,50 @@
+#camera {
+    position: relative;
+    height: 480px;
+}
+
+#snaps1 {
+    position: absolute;
+    top: 0;
+    right: 160px;
+    width: 160px;
+}
+
+#snaps2 {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 160px;
+}
+
+.img_initial {
+    width:160px;
+    height: 120px;
+    display: none;
+}
+
+.display_none {
+    display: none;
+}
+
+#tbl {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid black;
+    text-align: center;
+}
+
+.row {
+    border: 0.5px solid black;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+}
+
+#legend {
+    border: 0.5px solid black;
+    font-size: small;
+    width: 290px;
+}

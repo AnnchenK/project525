@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <link href="styles/style.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototype Project525</title>
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://docs.opencv.org/4.5.1/opencv.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.0"></script>
+    <script src="scripts/metrics.js"></script>
+    <script src="scripts/script.js"></script>
+</head>
+<body onload="startCam()">
+    <div id='camera'>
+        <div id='snaps1'>
+            <img id="img1" class='img_initial'>
+            <p id='c1' class='display_none'></p>
+            <img id="img2" class='img_initial'>
+            <p id='c2' class='display_none'></p>
+        </div>
+        <div id='snaps2'>
+            <img id="img3" class='img_initial'>
+            <p id='c3' class='display_none'></p>
+            <img id="img4" class='img_initial'>
+            <p id='c4' class='display_none'></p>
+        </div>
+    </div>
+    <div id='buttns'></div>
+    <div id='table'></div>
+    <div id='legend'>
+        <p>mse - среднеквадратичная ошибка</p>
+        <p>rmse - корень из среднеквадратичной ошибки</p>
+        <p>snr - отношение сигнала к шуму</p>
+        <p>psnr - пиковое отношение сигнала к шуму</p>
+        <p>ssim - метод структурного сходства</p>
+        <p>brithness - яркость по уровням (0-7)</p>
+    </div>
+</body>
+</html>

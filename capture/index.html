@@ -10,7 +10,7 @@
     
     <div class="vid">
         <p class="p"> Веб-камера</p>
-              <video onclick="snapshot(this);" id="video" controls autoplay></video>
+        <video onclick="snapshot(this);" id="video" controls autoplay muted></video>
     </div>
 
     <div class="bttn" id="bttn">
@@ -21,10 +21,19 @@
         <button id="stop" onclick="stopRecording();">Остановить запись звука</button>
     </div>
 
+    <canvas id="canvas"></canvas>
+
     <ol id="recordingsList"></ol>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdn.rawgit.com/mattdiamond/Recorderjs/08e7abd9/dist/recorder.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.0"></script>
+    <script type="text/javascript">
+        window.languagePluginUrl = 'https://cdn.jsdelivr.net/pyodide/v0.16.1/full/';
+    </script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.16.1/full/pyodide.js"></script>
+    <script src="scripts/metrics.js"></script>
     <script src="scripts/script.js"></script>
 </body>
 </html>
