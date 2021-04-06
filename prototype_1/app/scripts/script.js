@@ -1,6 +1,7 @@
 let video;
 let webcamStream;
-let timer;
+let audioContext = window.AudioContext || window.webkitAudioContext;
+let timer, analyzer, timer1;
 let flag = 1;
 
 //функция запускается при загрузке страницы
@@ -9,9 +10,12 @@ function startCam() {
   navigator.mediaDevices
     .getUserMedia({
       video: true,
+      audio: true
     })
     .then((stream) => {
       video = document.createElement("video");
+      video.muted = true;
+      video.autoplay = true;
       document.getElementById("camera").append(video);
 
       //вспомогательная кнопка для управления
@@ -21,19 +25,47 @@ function startCam() {
       bttn.setAttribute("id", "bttn");
       document.getElementById("buttns").append(bttn);
 
+      audioContext = new AudioContext()
+      var mic = audioContext.createMediaStreamSource(stream)
+
+      analyzer = Meyda.createMeydaAnalyzer ({
+        'audioContext': audioContext,
+        'source': mic,
+        'bufferSize': 16384,
+        'featureExtractors': ['energy', 'zcr', 'loudness'],
+        'callback': features => {
+          console.log(features)
+          let data = {
+            loudness: parseFloat(features.loudness.total).toFixed(2),
+            zcr: features.zcr,
+            energy: parseFloat(features.energy).toFixed(2)
+          }
+          console.log(data)
+          appendSoundRow(data)
+          analyzer.stop()
+        }
+      });
+      
       video.srcObject = stream;
       video.play();
 
       webcamStream = stream;
 
-      //установка интервала (в данном случае 20с) для использования метрик
+      //установка интервала (в данном случае 10с) для использования метрик
       timer = setInterval(() => {
         doMetrics();
-      }, 20000);
+      }, 10000);
+
+      timer1 = setInterval(() => {
+        analyzer.start()
+      }, 5000);
 
       //создание таблицы с метриками (если она еще не создана)
       if (getComputedStyle(document.getElementById("table")).height == "0px")
         createTable();
+
+      if (getComputedStyle(document.getElementById("table_sound")).height == "0px")
+        createSoundTable();
     })
     .catch((error) => {
       console.log("navigator.getUserMedia error: ", error);
@@ -43,8 +75,11 @@ function startCam() {
 //функция прекращения передачи потока с веб-камеры
 function stopCam() {
   webcamStream.getTracks()[0].stop();
+  webcamStream.getTracks()[1].stop();
+  analyzer.stop()
   //остановка интервала
   clearInterval(timer);
+  clearInterval(timer1);
   document.getElementById("camera").removeChild(video);
   let bttn = document.getElementById("bttn");
   bttn.innerHTML = "Restart Cam";
@@ -56,9 +91,9 @@ function stopCam() {
 
 //основная функция работы с метриками
 async function doMetrics() {
-  //получение двух стоп-кадров с интервалом (1с)
+  //получение двух стоп-кадров с интервалом (5с)
   img1 = snapshot(0);
-  pause(1000);
+  pause(5000);
   img2 = snapshot(1);
   //передача в функции, которые работают с изображениями
   let c = await loadAndPredict(img2);
@@ -71,21 +106,22 @@ async function doMetrics() {
     let t2 = tf.browser.fromPixels(img2);
 
     let mse1 = mse(t1, t2).dataSync(0) / 255;
-    let rmse1 = rmse(mse1).dataSync(0);
     let psnr1 = psnr(mse1);
     let snr1 = snr(t1, t2);
     let ssim1 = ssim(t1, t2);
 
+    let result = (mse1 + psnr1 + snr1 + ssim1) * 0.2;
+
     //создание объекта для отражения результатов метрик в таблице
     let data = {
       mse: parseFloat(mse1).toFixed(2),
-      rmse: parseFloat(rmse1).toFixed(2),
       psnr: parseFloat(psnr1).toFixed(2),
       snr: parseFloat(snr1).toFixed(2),
       ssim: parseFloat(ssim1).toFixed(2),
       br: br,
       count: c,
       is_blur_2: parseFloat(bl_2).toFixed(5),
+      result: parseFloat(result).toFixed(2)
     };
 
     appendRow(data);
@@ -161,14 +197,14 @@ function createTable() {
   let tableHeaders = [
     "for",
     "mse",
-    "rmse",
     "snr",
     "psnr",
     "ssim",
+    "result",
     "for",
     "brithness",
     "count of faces",
-    "blur_cv",
+    "blur_cv"
   ];
   let table = document.createElement("table");
   table.setAttribute("id", "tbl");
@@ -191,13 +227,38 @@ function createTable() {
   document.getElementById("table").append(table);
 }
 
+function createSoundTable() {
+  let tableHeaders = [
+    "loudness",
+    "energy",
+    "zcr"
+  ];
+  let table = document.createElement("table");
+  table.setAttribute("id", "tbl_s");
+  let tableHead = document.createElement("thead");
+  let tableRow = document.createElement("tr");
+
+  tableHeaders.forEach((header) => {
+    let th = document.createElement("th");
+    th.innerText = header;
+    tableRow.append(th);
+  });
+
+  tableRow.setAttribute('class', 'row')
+  tableHead.append(tableRow);
+  table.append(tableHead);
+
+  let tableBody = document.createElement("tbody");
+  table.append(tableBody);
+
+  document.getElementById("table_sound").append(table);
+}
+
 //функция для добавления строки в таблицу со значениями метрик
 function appendRow(data) {
   let newRow = document.createElement("tr");
   let mse = document.createElement("td");
   mse.innerText = data.mse;
-  let rmse = document.createElement("td");
-  rmse.innerText = data.rmse;
   let snr = document.createElement("td");
   snr.innerText = data.snr;
   let psnr = document.createElement("td");
@@ -210,6 +271,8 @@ function appendRow(data) {
   count.innerText = data.count;
   let bl2 = document.createElement("td");
   bl2.innerText = data.is_blur_2;
+  let result = document.createElement("td");
+  result.innerText = data.result;
 
   let table = document.getElementById("tbl");
 
@@ -231,6 +294,23 @@ function appendRow(data) {
 
   if (table.rows.length == 3) table.deleteRow(1);
 
-  newRow.append(for1, mse, rmse, snr, psnr, ssim, for2, br, count, bl2);
+  newRow.append(for1, mse, snr, psnr, ssim, result, for2, br, count, bl2);
+  table.append(newRow);
+}
+
+function appendSoundRow(data) {
+  let newRow = document.createElement("tr");
+  let loudness = document.createElement("td");
+  loudness.innerText = data.loudness;
+  let energy = document.createElement("td");
+  energy.innerText = data.energy;
+  let zcr = document.createElement("td");
+  zcr.innerText = data.zcr;
+
+  let table = document.getElementById("tbl_s");
+
+  if (table.rows.length == 3) table.deleteRow(1);
+
+  newRow.append(loudness, energy, zcr);
   table.append(newRow);
 }

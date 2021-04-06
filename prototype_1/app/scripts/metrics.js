@@ -3,11 +3,6 @@ function mse(t1, t2) {
   return tf.metrics.meanSquaredError(t1, t2).mean();
 }
 
-//rmse - root mean square error
-function rmse(mse) {
-  return tf.sqrt(mse);
-}
-
 //psnr - peak signal to noise ratio
 function psnr(mse) {
   let MAX = 255;
@@ -87,6 +82,77 @@ function blured_2(imgl) {
   var t = cv.Laplacian(src, dst, cv.CV_64F, 1, 1, 0, cv.BORDER_DEFAULT);
   console.log(t,cv.meanStdDev(dst, menO, men),menO.data64F[0], men.data64F[0]);
   return menO.data64F[0];
+}
+
+function rms_flat(a) {   
+  //Return the root mean square of all the elements of *a*, flattened out
+  return tf.sqrt(tf.mean(tf.abs(a).mul(tf.abs(a)))).dataSync(0)[0];
+}
+
+function uppermin(f, x) {
+  //Find range between nearest local minima from peak at index x
+  //f = f.arraySync(0);
+  f.dataSync(20)
+  for (var i = x + 1 ; i < f.shape[0]; i++) {
+      if (f.dataSync(i + 1) >= f.dataSync(i)){
+          return i;
+      }
+  }
+}
+
+function lowermin(f, x) {
+  for (var i = x - 1; i > 0; i--) {
+      if (f.dataSync(i) <= f.dataSync(i - 1)) {
+          return i + 1;
+      }
+  }
+}
+
+function thdn(signal, sample_rate) {
+  //
+  //Measure the THD+N for a signal and print the results
+  //Get rid of DC and window the signal
+  tf.tidy(() => {
+  const mean = signal.mean(0);
+  console.log("mean ", mean.dataSync(0));
+  signal = signal.sub(mean);
+  const win = tf.signal.hammingWindow(signal.shape[0]);
+  const windowed = signal.mul(win);
+  // Measure the total signal before filtering but after windowing
+  const total_rms = rms_flat(windowed);
+
+  // Find the peak of the frequency spectrum (fundamental frequency), and
+  // filter the signal by throwing away values between the nearest local
+  // minima
+  let f = tf.spectral.rfft(windowed);
+  tf.abs(f).print()
+  const i = tf.argMax(tf.abs(f));
+
+  //Not exact
+  console.log('Frequency: %f Hz', (sample_rate * (i.dataSync(0)[0] / windowed.shape[0])));
+  const low = uppermin(tf.abs(f), i.dataSync(0)[0]);
+  const upp = lowermin(tf.abs(f), i.dataSync(0)[0]);
+  console.log(low, upp);
+  //my_var = my_var[4:8].assign(tf.zeros(4))
+  console.log(f);
+  // Create a buffer and set values at particular indices.
+  // Multiplicate by 2 for store real and comlex part of a value
+  const real_buffer = tf.buffer(f.shape, 'float32', tf.real(f).dataSync());
+  const imag_buffer = tf.buffer(f.shape, 'float32', tf.imag(f).dataSync());
+  //f = f.arraySync();
+  for (var j = low ; j < upp; j++) {
+    real_buffer.set(j, 0);
+    imag_buffer.set(j, 0);
+  };
+  const f_zero = tf.complex(real_buffer.toTensor(), imag_buffer.toTensor());
+  // Convert the buffer back to a tensor.
+  //const f_zero = tf.tensor(x);
+  // Transform noise back into the signal domain and measure it
+  noise = tf.spectral.irfft(f_zero);
+  THDN = rms_flat(noise) / total_rms;
+  console.log("THD+N: " + THDN * 100);
+  })
+ return parseFloat(THDN * 100).toFixed(5);
 }
 
 //bodypix API

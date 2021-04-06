@@ -35,6 +35,15 @@
     text-align: center;
 }
 
+#tbl_s {
+    table-layout: fixed;
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid blue;
+    color: blue;
+    text-align: center;
+}
+
 .row {
     border: 0.5px solid black;
 }
@@ -47,4 +56,11 @@ body {
     border: 0.5px solid black;
     font-size: small;
     width: 291px;
+}
+
+#table_sound {
+    position: absolute;
+    right: 0;
+    width: 50%;
+    top: 600px;
 }

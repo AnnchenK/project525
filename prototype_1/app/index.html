@@ -13,6 +13,7 @@
     <script type="text/javascript" src="https://docs.opencv.org/4.5.1/opencv.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs/dist/tf.min.js"> </script>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/body-pix@2.0"></script>
+    <script src="https://unpkg.com/meyda/dist/web/meyda.min.js"></script>
     <script src="scripts/metrics.js"></script>
     <script src="scripts/script.js"></script>
 </head>
@@ -33,13 +34,13 @@
     </div>
     <div id='buttns'></div>
     <div id='table'></div>
+    <div id='table_sound'></div>
     <div id='legend'>
         <p>mse - среднеквадратичная ошибка</p>
-        <p>rmse - корень из среднеквадратичной ошибки</p>
         <p>snr - отношение сигнала к шуму</p>
         <p>psnr - пиковое отношение сигнала к шуму</p>
         <p>ssim - метод структурного сходства</p>
-        <p>brithness - яркость по уровням (0-7)</p>
+        <p>brightness - яркость по уровням (0-10)</p>
     </div>
 </body>
 </html>
