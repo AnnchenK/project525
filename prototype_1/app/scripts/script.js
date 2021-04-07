@@ -97,6 +97,7 @@ async function doMetrics() {
   img2 = snapshot(1);
   //передача в функции, которые работают с изображениями
   let c = await loadAndPredict(img2);
+  let c1 = await loadAndPredict(img1);
   let br = brightness(img2);
   let bl_2 = blured_2(img2);
 
@@ -119,7 +120,7 @@ async function doMetrics() {
       snr: parseFloat(snr1).toFixed(2),
       ssim: parseFloat(ssim1).toFixed(2),
       br: br,
-      count: c,
+      count: Math.abs(c1 - c),
       is_blur_2: parseFloat(bl_2).toFixed(5),
       result: parseFloat(result).toFixed(2)
     };
@@ -202,8 +203,8 @@ function createTable() {
     "ssim",
     "result",
     "for",
-    "brithness",
-    "count of faces",
+    "brightness",
+    "delta count of faces",
     "blur_cv"
   ];
   let table = document.createElement("table");
