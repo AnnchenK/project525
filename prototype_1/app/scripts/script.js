@@ -32,13 +32,14 @@ function startCam() {
         'audioContext': audioContext,
         'source': mic,
         'bufferSize': 16384,
-        'featureExtractors': ['energy', 'zcr', 'loudness'],
+        'featureExtractors': ['energy', 'zcr', 'loudness', 'spectralFlatness'],
         'callback': features => {
           console.log(features)
           let data = {
             loudness: parseFloat(features.loudness.total).toFixed(2),
             zcr: features.zcr,
-            energy: parseFloat(features.energy).toFixed(2)
+            energy: parseFloat(features.energy).toFixed(2),
+            spectralFlatness: parseFloat(features.spectralFlatness).toFixed(3)
           }
           console.log(data)
           appendSoundRow(data)
@@ -232,7 +233,8 @@ function createSoundTable() {
   let tableHeaders = [
     "loudness",
     "energy",
-    "zcr"
+    "zcr",
+    "Spectral Flatness"
   ];
   let table = document.createElement("table");
   table.setAttribute("id", "tbl_s");
@@ -307,11 +309,13 @@ function appendSoundRow(data) {
   energy.innerText = data.energy;
   let zcr = document.createElement("td");
   zcr.innerText = data.zcr;
+  let spf = document.createElement("td");
+  spf.innerText = data.spectralFlatness;
 
   let table = document.getElementById("tbl_s");
 
   if (table.rows.length == 3) table.deleteRow(1);
 
-  newRow.append(loudness, energy, zcr);
+  newRow.append(loudness, energy, zcr, spf);
   table.append(newRow);
 }
