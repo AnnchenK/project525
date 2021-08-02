@@ -148,14 +148,18 @@ function startCam() {
                     let res = {
                         loud: Math.round((genergy(data.energy) + gloudness(data.loudness)) / 2),
                         quo: Math.round(
-                            (gzcr(data.zcr) +
-                                gsnr(data.snr) +
-                                gspectralflatness(data.spectralFlatness)) /
-                                3,
+                            (Math.min(gzcr(data.zcr),
+                                gsnr(data.snr),
+                                gspectralflatness(data.spectralFlatness)) + Math.max(gzcr(data.zcr),
+                                    gsnr(data.snr),
+                                    gspectralflatness(data.spectralFlatness)))/ 2,
                         ),
                         thdn: gthdn(THDN),
                     };
                     console.log(res);
+                    console.log("zcr: "+ " "+gzcr(data.zcr) + " snr: "+
+                        gsnr(data.snr) +" sf: "+
+                        gspectralflatness(data.spectralFlatness));
                     appendSoundRow(res);
                     analyzer.stop();
                 },
@@ -485,19 +489,19 @@ function gsnr(a) {
 }
 
 function gloudness(a) {
-    if (a >= 0 && a <= 39) {
+    if (a >= 0 && a <= 18) {
         return 1;
     }
-    if (a > 39 && a <= 79) {
+    if (a > 18 && a <= 36) {
         return 2;
     }
-    if (a > 79 && a <= 117) {
+    if (a > 36 && a <= 72) {
         return 3;
     }
-    if (a > 117 && a <= 156) {
+    if (a > 72 && a <= 100) {
         return 4;
     }
-    if (a > 156) {
+    if (a > 100) {
         return 5;
     } else {
         return 0;
@@ -505,19 +509,19 @@ function gloudness(a) {
 }
 
 function genergy(a) {
-    if (a >= 0 && a <= 550) {
+    if (a >= 0 && a <= 110) {
         return 1;
     }
-    if (a > 550 && a <= 1100) {
+    if (a > 110 && a <= 550) {
         return 2;
     }
-    if (a > 1100 && a <= 1650) {
+    if (a > 550 && a <= 1110) {
         return 3;
     }
-    if (a > 1650 && a <= 2250) {
+    if (a > 1110 && a <= 1650) {
         return 4;
     }
-    if (a > 2250) {
+    if (a > 1) {
         return 5;
     } else {
         return 0;
@@ -525,19 +529,19 @@ function genergy(a) {
 }
 
 function gzcr(a) {
-    if (a >= 0 && a <= 1599) {
+    if (a >= 0 && a <= 3276) {
         return 1;
     }
-    if (a > 1599 && a <= 3198) {
+    if (a > 3276 && a <= 6554) {
         return 2;
     }
-    if (a > 3198 && a <= 4797) {
+    if (a > 6554 && a <= 9830) {
         return 3;
     }
-    if (a > 4797 && a <= 6397) {
+    if (a > 9830 && a <= 16384) {
         return 4;
     }
-    if (a > 6397) {
+    if (a > 16384) {
         return 5;
     } else {
         return 0;
