@@ -10,7 +10,7 @@ function psnr(mse) {
     let MAX = 255;
     if (mse == 0) return MAX;
 
-    return 10 * Math.log10(tf.square(MAX).dataSync(0) / mse);
+    return 20 * Math.log10(MAX ** 2 / mse ** 0.5);
 }
 
 //snr - signal to noise ratio
@@ -19,7 +19,8 @@ function snr(t1, t2) {
 }
 
 //ssim - values of the SSIM metric
-function ssim(t1, t2) {
+//uqi - universal quality index
+function ssim_uqi(t1, t2) {
     let c1 = 0.01 * 256 * 256 * 256;
     let c2 = 0.03 * 256 * 256 * 256;
     let m1 = tf.moments(t1).mean.dataSync(0)[0];
@@ -28,10 +29,16 @@ function ssim(t1, t2) {
     let s2 = tf.moments(t2).variance.dataSync(0)[0];
     let s = 0.5 * (tf.moments(tf.add(t1, t2)).variance.dataSync(0) - s1 - s2);
 
-    return (
-        ((2 * m1 * m2 + c1) * (2 * s + c2)) /
-        ((Math.pow(m1, 2) + Math.pow(m2, 2) + c1) * (s1 + s2 + c2))
-    );
+    return { 
+        ssim: (
+            ((2 * m1 * m2 + c1) * (2 * s + c2)) /
+            ((Math.pow(m1, 2) + Math.pow(m2, 2) + c1) * (s1 + s2 + c2))
+        ),
+        uqi: (
+            4 * s * m1 * m2 / 
+            ((s1 + s2) * (m1 ** 2 + m2 ** 2))
+        ),
+    };
 }
 
 function brightness(img1) {

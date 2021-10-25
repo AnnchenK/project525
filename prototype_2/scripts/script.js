@@ -223,9 +223,9 @@ async function doMetrics() {
         let mse1 = mse(t1, t2).dataSync(0) / 255;
         let psnr1 = psnr(mse1);
         let snr1 = snr(t1, t2);
-        let ssim1 = ssim(t1, t2);
+        let { ssim, uqi } = ssim_uqi(t1, t2);
 
-        let res_quo = Math.round((fmse(mse1) + fpsnr(psnr1) + fsnr(snr1) + fssim(ssim1)) / 4);
+        let res_quo = Math.round((fmse(mse1) + fpsnr(psnr1) + fsnr(snr1) + fssim(ssim)) / 4);
         let res_brit = Math.round(br / 2);
 
         let res = {
