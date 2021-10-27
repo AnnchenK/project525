@@ -2,196 +2,210 @@ let video;
 let k = 6000;
 let webcamStream;
 let audioContext = window.AudioContext || window.webkitAudioContext;
+this.audioContext = new AudioContext();
 let timer, analyzer;
 let prev_img = undefined;
 const MAX_THDN = 0.04;
 let THDN;
 
+/*import {
+    mse,
+    psnr,
+    snr,
+    ssim_uqi,
+    brightness,
+    blured_1,
+    blured_2,
+    thdn,
+    snr_audio
+} from './metrics'*/
+
 //функция запускается при загрузке страницы
 function settiming() {
-  k = document.getElementById("timing").value * 1000;
-  document.getElementById("info").value="Интервал: "+k / 1000 +" секунд";
-  if(isNaN(k)){
-    k = 10000;
-  }
+    k = document.getElementById("timing").value * 1000;
     document.getElementById("info").value="Интервал: "+k / 1000 +" секунд";
-}
-function videoplayer(){
-  fileInput = document.getElementById('drop')
-  l = document.getElementById("timing")
-  l.setAttribute("disabled","disabled")
-	selectedFile = fileInput.files[0];
-  video = document.createElement('video');
-
-  video.setAttribute("controls","controls");
-  video.setAttribute("width","640px");
-  video.setAttribute("height","480px");
-  video.src = URL.createObjectURL(selectedFile);
-  video.autoplay = true;
-  video.muted = false;
-  document.getElementById('camera').append(video);
-  ctx = new AudioContext();
-  source = ctx.createMediaElementSource(video);
-  source.crossOrigin = "use-credentials";
-  (analyser = ctx.createAnalyser()), (processor = ctx.createScriptProcessor(1024, 1, 1));
-  source.connect(analyser);
-  source.connect(ctx.destination);
-  source.connect(processor);
-  processor.connect(ctx.destination);
-  tensor = new Uint8Array(analyser.frequencyBinCount);
-  console.log('sampleRate ' + ctx.sampleRate);
-  const a = tf.tensor1d([1, 2, 3]);
-  const time_m = tf.range(0, (2 * Math.PI) / 1000, 1 / ctx.sampleRate);
-  const signal = tf.sin(time_m.mul(tf.scalar(1000)));
-  THDN = thdn(signal, ctx.sampleRate);
-
-  analyzer = Meyda.createMeydaAnalyzer({
-      audioContext: ctx,
-      source: source,
-      bufferSize: 16384,
-      featureExtractors: ['energy', 'zcr', 'loudness', 'spectralFlatness'],
-      callback: (features) => {
-          console.log(features);
-          let data = {
-              loudness: parseFloat(features.loudness.total).toFixed(2),
-              zcr: features.zcr,
-              energy: parseFloat(features.energy).toFixed(2),
-              snr: parseFloat(snr_audio(tensor)).toFixed(2),
-              spectralFlatness: parseFloat(features.spectralFlatness).toFixed(3),
-          };
-          let res = {
-              loud: Math.round((genergy(data.energy) + gloudness(data.loudness)) / 2),
-              quo: Math.round(
-                  (gzcr(data.zcr) +
-                      gsnr(data.snr) +
-                      gspectralflatness(data.spectralFlatness)) /
-                      3,
-              ),
-              thdn: gthdn(THDN),
-          };
-          console.log(res);
-          appendSoundRow(res);
-          analyzer.stop();
-      },
-  });
-  processor.onaudioprocess = function () {
-      analyser.getByteFrequencyData(tensor);
-  };
-
-  setTimeout(() => {
-      prev_img = snapshot();
-  }, 1000);
-
-  //установка интервала (в данном случае 60с) для использования метрик
-  timer = setInterval(() => {
-      doMetrics();
-      analyzer.start();
-  }, k);
-
-  //создание таблицы с метриками (если она еще не создана)
-  if (getComputedStyle(document.getElementById('table')).height == '0px') {
-      createPicTable();
-      createSoundTable();
+    if(isNaN(k)){
+      k = 10000;
+    }
+      document.getElementById("info").value="Интервал: "+k / 1000 +" секунд";
   }
-
-}
-function startCam() {
-    //получение потока с веб-камеры
+  function videoplayer(){
+    fileInput = document.getElementById('drop')
     l = document.getElementById("timing")
     l.setAttribute("disabled","disabled")
-    navigator.mediaDevices
-        .getUserMedia({
-            video: true,
-            audio: true,
-        })
-        .then((stream) => {
-            video = document.createElement('video');
-            video.muted = true;
-            video.autoplay = true;
-            document.getElementById('camera').append(video);
-
-            ctx = new AudioContext();
-            source = ctx.createMediaStreamSource(stream);
-            (analyser = ctx.createAnalyser()), (processor = ctx.createScriptProcessor(1024, 1, 1));
-            source.connect(analyser);
-            source.connect(processor);
-            processor.connect(ctx.destination);
-
-            //вспомогательная кнопка для управления
-            let bttn = document.createElement('button');
-            bttn.innerHTML = 'Stop Cam';
-            bttn.setAttribute('onclick', 'stopCam()');
-            bttn.setAttribute('id', 'bttn');
-            document.getElementById('buttns').append(bttn);
-
-            tensor = new Uint8Array(analyser.frequencyBinCount);
-            console.log('sampleRate ' + ctx.sampleRate);
-            const a = tf.tensor1d([1, 2, 3]);
-            const time_m = tf.range(0, (2 * Math.PI) / 1000, 1 / ctx.sampleRate);
-            const signal = tf.sin(time_m.mul(tf.scalar(1000)));
-            THDN = thdn(signal, ctx.sampleRate);
-
-            analyzer = Meyda.createMeydaAnalyzer({
-                audioContext: ctx,
-                source: source,
-                bufferSize: 16384,
-                featureExtractors: ['energy', 'zcr', 'loudness', 'spectralFlatness'],
-                callback: (features) => {
-                    console.log(features);
-                    let data = {
-                        loudness: parseFloat(features.loudness.total).toFixed(2),
-                        zcr: features.zcr,
-                        energy: parseFloat(features.energy).toFixed(2),
-                        snr: parseFloat(snr_audio(tensor)).toFixed(2),
-                        spectralFlatness: parseFloat(features.spectralFlatness).toFixed(3),
-                    };
-                    let res = {
-                        loud: Math.round((genergy(data.energy) + gloudness(data.loudness)) / 2),
-                        quo: Math.round(
-                            (Math.min(gzcr(data.zcr),
-                                gsnr(data.snr),
-                                gspectralflatness(data.spectralFlatness)) + Math.max(gzcr(data.zcr),
-                                    gsnr(data.snr),
-                                    gspectralflatness(data.spectralFlatness)))/ 2,
-                        ),
-                        thdn: gthdn(THDN),
-                    };
-                    console.log(res);
-                    console.log("zcr: "+ " "+gzcr(data.zcr) + " snr: "+
-                        gsnr(data.snr) +" sf: "+
-                        gspectralflatness(data.spectralFlatness));
-                    appendSoundRow(res);
-                    analyzer.stop();
-                },
-            });
-            processor.onaudioprocess = function () {
-                analyser.getByteFrequencyData(tensor);
+      selectedFile = fileInput.files[0];
+    video = document.createElement('video');
+  
+    video.setAttribute("controls","controls");
+    video.setAttribute("width","640px");
+    video.setAttribute("height","480px");
+    video.src = URL.createObjectURL(selectedFile);
+    video.autoplay = true;
+    video.muted = false;
+    document.getElementById('camera').append(video);
+    ctx = new AudioContext();
+    source = ctx.createMediaElementSource(video);
+    source.crossOrigin = "use-credentials";
+    (analyser = ctx.createAnalyser()), (processor = ctx.createScriptProcessor(1024, 1, 1));
+    source.connect(analyser);
+    source.connect(ctx.destination);
+    source.connect(processor);
+    processor.connect(ctx.destination);
+    tensor = new Uint8Array(analyser.frequencyBinCount);
+    console.log('sampleRate ' + ctx.sampleRate);
+    const a = tf.tensor1d([1, 2, 3]);
+    const time_m = tf.range(0, (2 * Math.PI) / 1000, 1 / ctx.sampleRate);
+    const signal = tf.sin(time_m.mul(tf.scalar(1000)));
+    THDN = thdn(signal, ctx.sampleRate);
+  
+    analyzer = Meyda.createMeydaAnalyzer({
+        audioContext: ctx,
+        source: source,
+        bufferSize: 16384,
+        featureExtractors: ['energy', 'zcr', 'loudness', 'spectralFlatness'],
+        callback: (features) => {
+            console.log(features);
+            let data = {
+                loudness: parseFloat(features.loudness.total).toFixed(2),
+                zcr: features.zcr,
+                energy: parseFloat(features.energy).toFixed(2),
+                snr: parseFloat(snr_audio(tensor)).toFixed(2),
+                spectralFlatness: parseFloat(features.spectralFlatness).toFixed(3),
             };
-            video.srcObject = stream;
-            video.play();
-
-            webcamStream = stream;
-
-            setTimeout(() => {
-                prev_img = snapshot();
-            }, 1000);
-
-            //установка интервала (в данном случае 60с) для использования метрик
-            timer = setInterval(() => {
-                doMetrics();
-                analyzer.start();
-            }, k);
-
-            //создание таблицы с метриками (если она еще не создана)
-            if (getComputedStyle(document.getElementById('table')).height == '0px') {
-                createPicTable();
-                createSoundTable();
-            }
-        })
-        .catch((error) => {
-            console.log('navigator.getUserMedia error: ', error);
-        });
-}
+            let res = {
+                loud: Math.round((genergy(data.energy) + gloudness(data.loudness)) / 2),
+                quo: Math.round(
+                    (gzcr(data.zcr) +
+                        gsnr(data.snr) +
+                        gspectralflatness(data.spectralFlatness)) /
+                        3,
+                ),
+                thdn: gthdn(THDN),
+            };
+            console.log(res);
+            appendSoundRow(res);
+            analyzer.stop();
+        },
+    });
+    processor.onaudioprocess = function () {
+        analyser.getByteFrequencyData(tensor);
+    };
+  
+    setTimeout(() => {
+        prev_img = snapshot();
+    }, 1000);
+  
+    //установка интервала (в данном случае 60с) для использования метрик
+    timer = setInterval(() => {
+        doMetrics();
+        analyzer.start();
+    }, k);
+  
+    //создание таблицы с метриками (если она еще не создана)
+    if (getComputedStyle(document.getElementById('table')).height == '0px') {
+        createPicTable();
+        createSoundTable();
+    }
+  
+  }
+  function startCam() {
+      //получение потока с веб-камеры
+      l = document.getElementById("timing")
+      l.setAttribute("disabled","disabled")
+      navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia
+      navigator.mediaDevices
+          .getUserMedia({
+              video: true,
+              audio: true,
+          })
+          .then((stream) => {
+              video = document.createElement('video');
+              video.muted = true;
+              video.autoplay = true;
+              document.getElementById('camera').append(video);
+  
+              ctx = new AudioContext();
+              source = ctx.createMediaStreamSource(stream);
+              (analyser = ctx.createAnalyser()), (processor = ctx.createScriptProcessor(1024, 1, 1));
+              source.connect(analyser);
+              source.connect(processor);
+              processor.connect(ctx.destination);
+  
+              //вспомогательная кнопка для управления
+              let bttn = document.createElement('button');
+              bttn.innerHTML = 'Stop Cam';
+              bttn.setAttribute('onclick', 'stopCam()');
+              bttn.setAttribute('id', 'bttn');
+              document.getElementById('buttns').append(bttn);
+  
+              tensor = new Uint8Array(analyser.frequencyBinCount);
+              console.log('sampleRate ' + ctx.sampleRate);
+              const a = tf.tensor1d([1, 2, 3]);
+              const time_m = tf.range(0, (2 * Math.PI) / 1000, 1 / ctx.sampleRate);
+              const signal = tf.sin(time_m.mul(tf.scalar(1000)));
+              THDN = thdn(signal, ctx.sampleRate);
+  
+              analyzer = Meyda.createMeydaAnalyzer({
+                  audioContext: ctx,
+                  source: source,
+                  bufferSize: 16384,
+                  featureExtractors: ['energy', 'zcr', 'loudness', 'spectralFlatness'],
+                  callback: (features) => {
+                      console.log(features);
+                      let data = {
+                          loudness: parseFloat(features.loudness.total).toFixed(2),
+                          zcr: features.zcr,
+                          energy: parseFloat(features.energy).toFixed(2),
+                          snr: parseFloat(snr_audio(tensor)).toFixed(2),
+                          spectralFlatness: parseFloat(features.spectralFlatness).toFixed(3),
+                      };
+                      let res = {
+                          loud: Math.round((genergy(data.energy) + gloudness(data.loudness)) / 2),
+                          quo: Math.round(
+                              (Math.min(gzcr(data.zcr),
+                                  gsnr(data.snr),
+                                  gspectralflatness(data.spectralFlatness)) + Math.max(gzcr(data.zcr),
+                                      gsnr(data.snr),
+                                      gspectralflatness(data.spectralFlatness)))/ 2,
+                          ),
+                          thdn: gthdn(THDN),
+                      };
+                      console.log(res);
+                      console.log("zcr: "+ " "+gzcr(data.zcr) + " snr: "+
+                          gsnr(data.snr) +" sf: "+
+                          gspectralflatness(data.spectralFlatness));
+                      appendSoundRow(res);
+                      analyzer.stop();
+                  },
+              });
+              processor.onaudioprocess = function () {
+                  analyser.getByteFrequencyData(tensor);
+              };
+              video.srcObject = stream;
+              video.play();
+  
+              webcamStream = stream;
+  
+              setTimeout(() => {
+                  prev_img = snapshot();
+              }, 1000);
+  
+              //установка интервала (в данном случае 60с) для использования метрик
+              timer = setInterval(() => {
+                  doMetrics();
+                  analyzer.start();
+              }, k);
+  
+              //создание таблицы с метриками (если она еще не создана)
+              if (getComputedStyle(document.getElementById('table')).height == '0px') {
+                  createPicTable();
+                  createSoundTable();
+              }
+          })
+          .catch((error) => {
+              console.log('navigator.getUserMedia error: ', error);
+          });
+  }
 
 //функция прекращения передачи потока с веб-камеры
 function stopCam() {
